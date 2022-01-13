@@ -1,14 +1,15 @@
-public class Voo {
+import java.io.Serializable;
+
+public class Voo implements Serializable {
+    private int idVoo;
     private String origem;
     private String destino;
     private int capacidade;
-    private int ocupacao;
 
-
-    public Voo (String origem,String destino,int ocupacao, int capacidade){
+    public Voo (int idVoo,String origem,String destino,int capacidade){
+        this.idVoo = idVoo;
         this.origem=origem;
         this.destino=destino;
-        this.ocupacao=ocupacao;
         this.capacidade=capacidade;
     }
 
@@ -16,18 +17,13 @@ public class Voo {
 
     public String getDestino() {return this.destino;}
 
-    public int getOcupacao() {return this.ocupacao;}
-
     public int getCapacidade() {return this.capacidade;}
 
-    public boolean isFull() {
-        return this.ocupacao==this.capacidade;
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.origem).append("->").append(this.destino).append("\n");
+        return sb.toString();
     }
 
-    public boolean addPassageiro() {
-        if(!isFull()) {
-            this.ocupacao++;
-            return true;}
-        return false;
-    }
 }

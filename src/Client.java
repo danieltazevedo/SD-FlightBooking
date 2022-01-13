@@ -1,7 +1,9 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class Client {
 
@@ -55,10 +57,10 @@ public class Client {
             while (!exit) {
                 System.out.print("\n***Reserva de Voos***\n\n"
                         + "O que pretende fazer?\n"
-                        + "1) Reserva de uma viagem.\n"
-                        + "2) Cancelamento da reserva de uma viagem.\n"
-                        + "3) Obter da lista de todas os voos existentes.\n"
-                        + (username.startsWith("admin") ? "4) Inserção de informação sobre voos.\n" : "")
+                        + "1) Reservar uma viagem.\n"
+                        + "2) Cancelar reserva de uma viagem.\n"
+                        + "3) Obter lista de voos existentes.\n"
+                        + (username.startsWith("admin") ? "4) Inserir informação sobre voos.\n" : "")
                         + (username.startsWith("admin") ? "5) Encerramento de um dia.\n" : "")
                         + "0) Sair.\n\n"
                         + "Insira o valor corresponde à operação desejada: ");
@@ -70,22 +72,72 @@ public class Client {
                         exit = true;
                         break;
                     case "1":
-                        System.out.println("Você escolheu reservar viagem\n");
+                        System.out.println("***RESERVAR VIAGEM***\n");
+                        System.out.println("Insira o percurso completo. Digite END quando terminar:");
+                        String line = stdIn.readLine();
+                        List<String> cidades = new ArrayList<>();
+
+                        // ler o percurso
+                        while(!(line.equals("END"))){
+                            cidades.add(line.toLowerCase());
+                            line = stdIn.readLine();
+                        }
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(cidades.size());
+                        for(String cid : cidades){
+                            sb.append(";").append(cid);
+                        }
+
+                        // ler as datas
+                        System.out.println("Insira as datas (DD/MM/AAAA): ");
+                        System.out.print("Data inicio: ");
+                        String dataInicio = stdIn.readLine();
+                        System.out.print("Data final: ");
+                        String dataFinal = stdIn.readLine();
+
+                        // enviar percurso e datas:    lisboa;porto;terceira;20/12/2021;25/12/2021
+                        sb.append(";").append(dataInicio).append(";").append(dataFinal);
+                        m.send(20,username,sb.toString().getBytes());
+                        String respostaReserva = new String(m.receive(20), StandardCharsets.UTF_8);
+                        System.out.println(respostaReserva);
                         break;
                     case "2":
-                        System.out.println("Você escolheu cancelar a reserva de uma viagem.\n");
+                        System.out.println("***CANCELAR RESERVA***\n\n"
+                                + "Indique o código de reserva: ");
+                        String codigoReserva = stdIn.readLine();
+
+                        m.send(44,username,codigoReserva.getBytes());
+                        String respostaCancelamento = new String(m.receive(44), StandardCharsets.UTF_8);
+                        System.out.println(respostaCancelamento);
+
                         break;
                     case "3":
-                        System.out.println("Você escolheu Obter da lista de todas os voos existentes.\n");
+                        System.out.println("***LISTA DE VOOS***\n");
+                        m.send(80,username,new byte[0]);
+                        String resposta = new String(m.receive(80), StandardCharsets.UTF_8);
+                        System.out.println(resposta);
                         break;
                     case "4":
                         if (username.startsWith("admin")) {
-                            System.out.println("Você escolheu Obter da lista de todas os voos existentes.\n");
+                            System.out.println("***INSERIR INFORMACAO SOBRE VOOS***\n\n");
+                            System.out.print("Origem: ");
+                            String ori = stdIn.readLine().toLowerCase();
+                            System.out.print("Destino: ");
+                            String des = stdIn.readLine().toLowerCase();
+                            System.out.print("Capacidade: ");
+                            String capacidade = stdIn.readLine();
+                            System.out.println(capacidade);
+                            StringBuilder sbb = new StringBuilder();
+                            sbb.append(ori).append(";").append(des).append(";").append(capacidade);
+                            m.send(55,username,sbb.toString().getBytes()); // quero inserir informacao
+
+                            String response = new String(m.receive(55), StandardCharsets.UTF_8);
+                            System.out.println(response);
                             break;
                         }
                     case "5":
                         if (username.startsWith("admin")) {
-                            System.out.println("Você escolheu Encerramento de um dia.\n");
+                            System.out.println("***ENCERRAMENTO DE DIA***\n\n");
                             break;
                         }
                 }
