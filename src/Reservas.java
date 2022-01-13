@@ -1,6 +1,8 @@
 import java.io.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -27,7 +29,7 @@ public class Reservas implements Serializable {
         Reserva r = mapReservas.get(id);
         if(r == null) return false;
 
-        if(r.getDataReserva().equals(dateOfCanceling)){
+        if(r.getDataReserva().isEqual(dateOfCanceling)){
             b = true;
             mapReservas.remove(id);
         }
@@ -46,12 +48,15 @@ public class Reservas implements Serializable {
     public int getOcupacaoVoo(String origem, String destino, LocalDate data){
         int ocupacao = 0;
         for(Reserva r : this.mapReservas.values()){
-            if(r.getDataVoo().equals(data)){
-                for(Voo v : r.getEscalasReserva())
-                    if(v.getOrigem().equals(origem) && v.getDestino().equals(destino))
+            if(r.getDataVoo().isEqual(data)){
+                for(Voo v : r.getEscalasReserva()){
+                    if(v.getOrigem().equals(origem) && v.getDestino().equals(destino)) {
                         ocupacao++;
+                    }
+                }
             }
         }
+        System.out.println("OCUPACAO: " + ocupacao);
         return ocupacao;
     }
 

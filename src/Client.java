@@ -138,6 +138,9 @@ public class Client {
                     case "5":
                         if (username.startsWith("admin")) {
                             System.out.println("***ENCERRAMENTO DE DIA***\n\n");
+                            System.out.print("Insira o dia(DD/MM/AAAA): ");
+                            m.send(7,username,new byte[0]);
+
                             break;
                         }
                 }

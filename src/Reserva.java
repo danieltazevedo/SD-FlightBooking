@@ -11,11 +11,11 @@ public class Reserva implements Serializable {
 
 
     // Construtor
-    public Reserva(String codigoReserva, LocalDate dataVoo, LocalDate dataReserva) {
+    public Reserva(String codigoReserva, LocalDate dataVoo, LocalDate dataReserva,List<Voo> escalas) {
         this.codigoReserva = codigoReserva;
         this.dataVoo = dataVoo;
         this.dataReserva = dataReserva;
-        this.escalas = new ArrayList<Voo>();
+        this.escalas = escalas;
     }
 
     public Reserva(){

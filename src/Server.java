@@ -111,27 +111,37 @@ public class Server {
                                 //recebe percurso e datas:    3;lisboa;porto;terceira;20/12/2021;25/12/2021
                                 String[] parts = info.split(";");
                                 int numCidades = Integer.parseInt(parts[0]);
+
+                                List<Voo> listaVoos = new ArrayList<>();
+                                for(int i = 1; i < numCidades; i++){
+                                    Voo v = new Voo(parts[i],parts[i+1]);
+                                    listaVoos.add(v);
+                                }
+
+
                                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
                                 LocalDate inicio = LocalDate.parse(parts[numCidades + 1], formatter);
                                 LocalDate fim = LocalDate.parse(parts[numCidades + 2], formatter);
 
                                 Boolean b = false;
 
-                                for(;!(inicio.equals(fim)) && !b; inicio.plusDays(1)){
+                                for(;(inicio.isBefore(fim) || inicio.isEqual(fim)) && !b; inicio = inicio.plusDays(1)){
+                                    reservas.l.readLock().lock();
+                                    voos.l.readLock().lock();
                                     try {
-                                        reservas.l.readLock().lock();
-                                        voos.l.readLock().lock();
                                         for(int i = 1; i < numCidades; i++){
                                             int ocupacao;
                                             ocupacao = reservas.getOcupacaoVoo(parts[i], parts[i + 1], inicio);
                                             b = voos.escalaPossivel(parts[i], parts[i + 1], ocupacao);
 
-                                            if(b == false) break;
+                                            if(!b) break;
                                         }
                                     } finally {
                                         reservas.l.readLock().unlock();
                                         voos.l.readLock().unlock();
                                     }
+
+
                                 }
 
                                     if(b){ // encontrou um dia com todas as escalas disponiveis
@@ -139,14 +149,11 @@ public class Server {
                                         while(reservas.reservaExists(uniqueID)){
                                             uniqueID = UUID.randomUUID().toString();
                                         }
-                                        Reserva r = new Reserva(uniqueID,inicio.minusDays(1),LocalDate.now());
+                                        Reserva r = new Reserva(uniqueID,inicio.minusDays(1),LocalDate.now(),listaVoos);
                                         reservas.l.writeLock().lock();
                                         try{
-                                            System.out.println("1");
                                             reservas.addReserva(uniqueID,r);
-                                            System.out.println("2");
                                             reservas.serialize("reservas.ser");
-                                            System.out.println("3");
                                         } finally {
                                             reservas.l.writeLock().unlock();
                                         }
@@ -161,6 +168,7 @@ public class Server {
                                 System.out.println("Pedido de cancelamento de Reserva.");
                                 String codReserva = new String(frame.data, StandardCharsets.UTF_8);
                                 boolean b = true;
+                                System.out.println("SIZE ANTES: " + reservas.getMapReservas().size());
                                 reservas.l.writeLock().lock();
                                 try {
                                     b = reservas.removeReserva(codReserva,LocalDate.now());
@@ -169,6 +177,7 @@ public class Server {
                                 }
 
                                 if(b){
+                                    System.out.println("DEPOIS: " + reservas.getMapReservas().size());
                                     String sucessoCancelamento = new String("Reserva cancelada com sucesso.\n");
                                     c.send(44,"",sucessoCancelamento.getBytes());
                                 } else {
@@ -205,7 +214,7 @@ public class Server {
                                 } else c.send(55, "", "Erro - Este voo já existe!".getBytes());
 
                             } else if(frame.tag == 80){
-                                System.out.println("Pedido de lista de voos");
+                                System.out.println("Pedido de lista de voos.");
                                 Map<Integer,Voo> mv = new HashMap<>();
                                 mv = voos.getVoos();
                                 StringBuilder sb = new StringBuilder();
@@ -213,6 +222,9 @@ public class Server {
                                     sb.append(v.toString());
                                 }
                                 c.send(80,"",sb.toString().getBytes());
+                            } else if(frame.tag == 7){
+                                System.out.println("Encerramento de dia. (ADMIN)");
+
                             }
                             else if(frame.tag == 99){
                                 liuLock.lock();

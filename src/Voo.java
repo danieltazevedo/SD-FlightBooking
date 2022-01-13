@@ -13,6 +13,11 @@ public class Voo implements Serializable {
         this.capacidade=capacidade;
     }
 
+    public Voo (String origem, String destino){
+        this.origem = origem;
+        this.destino = destino;
+    }
+
     public String getOrigem() {return this.origem;}
 
     public String getDestino() {return this.destino;}
