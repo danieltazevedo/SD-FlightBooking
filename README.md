@@ -13,7 +13,7 @@ DistributedTravel: Flight booking platform in the form of client-server pair in 
 [Vasco](https://www.github.com/)
 
 
-## Compilation:
+## Compile & Run
 ```
 $ javac *.java
 $ java Server
