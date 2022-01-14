@@ -60,8 +60,9 @@ public class Client {
                         + "1) Reservar uma viagem.\n"
                         + "2) Cancelar reserva de uma viagem.\n"
                         + "3) Obter lista de voos existentes.\n"
-                        + (username.startsWith("admin") ? "4) Inserir informação sobre voos.\n" : "")
-                        + (username.startsWith("admin") ? "5) Encerramento de um dia.\n" : "")
+                        + "4) Lista de todos os percursos possíveis limitados a duas escalas\n"
+                        + (username.startsWith("admin") ? "5) Inserir informação sobre voos.\n" : "")
+                        + (username.startsWith("admin") ? "6) Encerramento de um dia.\n" : "")
                         + "0) Sair.\n\n"
                         + "Insira o valor corresponde à operação desejada: ");
 
@@ -118,6 +119,20 @@ public class Client {
                         System.out.println(resposta);
                         break;
                     case "4":
+                        System.out.println("***LISTA DE PERCURSOS LIMITADOS A DUAS ESCALAS***\n");
+                        System.out.print("Origem: ");
+                        String origem = stdIn.readLine().toLowerCase();
+                        System.out.print("Destino: ");
+                        String destino = stdIn.readLine().toLowerCase();
+                        StringBuilder sbp = new StringBuilder(origem + ";" + destino);
+
+                        m.send(33,username,sbp.toString().getBytes());
+                        String percursos = new String(m.receive(33), StandardCharsets.UTF_8);
+                        System.out.println("\n" + percursos);
+
+
+                        break;
+                    case "5":
                         if (username.startsWith("admin")) {
                             System.out.println("***INSERIR INFORMACAO SOBRE VOOS***\n\n");
                             System.out.print("Origem: ");
@@ -135,12 +150,14 @@ public class Client {
                             System.out.println(response);
                             break;
                         }
-                    case "5":
+                    case "6":
                         if (username.startsWith("admin")) {
                             System.out.println("***ENCERRAMENTO DE DIA***\n\n");
                             System.out.print("Insira o dia(DD/MM/AAAA): ");
-                            m.send(7,username,new byte[0]);
-
+                            String dia = stdIn.readLine();
+                            m.send(7,username,dia.getBytes());
+                            String response = new String(m.receive(7), StandardCharsets.UTF_8);
+                            System.out.println(response);
                             break;
                         }
                 }

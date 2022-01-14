@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -51,6 +53,34 @@ public class Voos implements Serializable {
 
         return b;
     }
+
+    // lisboa -> porto -> toquio  -> paris
+
+    public List<String> percursosPossiveis(String origem, String destino){
+        List<String> percursos = new ArrayList<>();
+        List<Voo> comDestinoFim = new ArrayList<>();
+        List<Voo> comInicioOrigem = new ArrayList<>();
+
+
+        for(Voo v : this.mapVoos.values()){
+            if(v.getOrigem().equals(origem)) comInicioOrigem.add(v);
+            else if (v.getDestino().equals(destino)) comDestinoFim.add(v);
+        }
+
+        for(Voo v : comDestinoFim){
+            for(Voo vs : comInicioOrigem){
+                if(verificaSeExiste(vs.getDestino(),v.getOrigem())){
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(origem + "->" + vs.getDestino() + "->" + v.getOrigem() + "->" + destino + "\n");
+                    percursos.add(sb.toString());
+                }
+            }
+        }
+
+        return percursos;
+    }
+
+
 
     public void serialize(String filepath) throws IOException {
         FileOutputStream fos = new FileOutputStream(filepath);

@@ -37,6 +37,14 @@ public class Reservas implements Serializable {
         return b;
     }
 
+    public void cancelaReservasByDate(LocalDate dataCancelamento){
+        for(Reserva r : this.mapReservas.values()){
+            if(r.getDataVoo().isEqual(dataCancelamento)){
+                mapReservas.remove(r.getCodigoReserva());
+            }
+        }
+    }
+
 
     public boolean reservaExists(String id) {
         return mapReservas.containsKey(id);

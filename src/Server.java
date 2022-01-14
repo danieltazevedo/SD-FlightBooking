@@ -18,6 +18,7 @@ public class Server {
             final Contas conta;
             final Reservas reservas;
             final Voos voos;
+            final DatasEncerradas datasEncerradas;
 
             // iniciar contas
             File f = new File("contas.ser");
@@ -37,6 +38,13 @@ public class Server {
             f = new File("voos.ser");
             if (!f.exists()) voos = new Voos();
             else voos = Voos.deserialize("voos.ser");
+
+            // datas encerradas
+            f = new File("datasEncerradas.ser");
+            if (!f.exists())
+                datasEncerradas = new DatasEncerradas();
+            else
+                datasEncerradas = DatasEncerradas.deserialize("contas.ser");
 
             ReentrantLock liuLock = new ReentrantLock();
             HashSet<String> loggedInUsers = new HashSet<>();
@@ -125,23 +133,24 @@ public class Server {
 
                                 Boolean b = false;
 
+
                                 for(;(inicio.isBefore(fim) || inicio.isEqual(fim)) && !b; inicio = inicio.plusDays(1)){
-                                    reservas.l.readLock().lock();
-                                    voos.l.readLock().lock();
-                                    try {
-                                        for(int i = 1; i < numCidades; i++){
-                                            int ocupacao;
-                                            ocupacao = reservas.getOcupacaoVoo(parts[i], parts[i + 1], inicio);
-                                            b = voos.escalaPossivel(parts[i], parts[i + 1], ocupacao);
+                                    if(!(datasEncerradas.existeDataEncerrada(inicio))){
+                                        reservas.l.readLock().lock();
+                                        voos.l.readLock().lock();
+                                        try {
+                                            for(int i = 1; i < numCidades; i++){
+                                                int ocupacao;
+                                                ocupacao = reservas.getOcupacaoVoo(parts[i], parts[i + 1], inicio);
+                                                b = voos.escalaPossivel(parts[i], parts[i + 1], ocupacao);
 
-                                            if(!b) break;
+                                                if(!b) break;
+                                            }
+                                        } finally {
+                                            reservas.l.readLock().unlock();
+                                            voos.l.readLock().unlock();
                                         }
-                                    } finally {
-                                        reservas.l.readLock().unlock();
-                                        voos.l.readLock().unlock();
                                     }
-
-
                                 }
 
                                     if(b){ // encontrou um dia com todas as escalas disponiveis
@@ -168,7 +177,6 @@ public class Server {
                                 System.out.println("Pedido de cancelamento de Reserva.");
                                 String codReserva = new String(frame.data, StandardCharsets.UTF_8);
                                 boolean b = true;
-                                System.out.println("SIZE ANTES: " + reservas.getMapReservas().size());
                                 reservas.l.writeLock().lock();
                                 try {
                                     b = reservas.removeReserva(codReserva,LocalDate.now());
@@ -224,6 +232,49 @@ public class Server {
                                 c.send(80,"",sb.toString().getBytes());
                             } else if(frame.tag == 7){
                                 System.out.println("Encerramento de dia. (ADMIN)");
+
+                                // receber data e defini-la como encerrada
+                                String dataEncerramento = new String(frame.data, StandardCharsets.UTF_8);
+                                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
+                                LocalDate dataEnc = LocalDate.parse(dataEncerramento, formatter);
+                                System.out.println("STRING: " + dataEncerramento);
+
+                                datasEncerradas.l.writeLock().lock();
+                                try{
+                                    datasEncerradas.addDataEncerrada(dataEnc);
+                                    datasEncerradas.serialize("datasencerradas.ser");
+                                } finally {
+                                    datasEncerradas.l.writeLock().unlock();
+                                }
+
+                                reservas.l.writeLock().lock();
+                                try{
+                                    // eliminar reservas naquela data
+                                    reservas.cancelaReservasByDate(dataEnc);
+                                    reservas.serialize("reservas.ser");
+                                } finally {
+                                    reservas.l.writeLock().unlock();
+                                }
+                                String mensagem = new String("Dia encerrado com sucesso.\n");
+                                c.send(7,"",mensagem.getBytes());
+                            } else if(frame.tag == 33){
+                                System.out.println("Pedido de todos os percursos limitados a 2 escalas");
+
+                                String origemDestino = new String(frame.data, StandardCharsets.UTF_8);
+                                String[] origemDest = origemDestino.split(";");
+                                List<String> percursos = new ArrayList<>();
+                                voos.l.readLock().lock();
+                                try{
+                                    percursos = voos.percursosPossiveis(origemDest[0],origemDest[1]);
+                                } finally {
+                                    voos.l.readLock().unlock();
+                                }
+
+                                StringBuilder sPercursos = new StringBuilder();
+                                for(String sp : percursos){
+                                    sPercursos.append(sp);
+                                }
+                                c.send(33,"",sPercursos.toString().getBytes());
 
                             }
                             else if(frame.tag == 99){
