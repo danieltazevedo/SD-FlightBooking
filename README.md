@@ -1,5 +1,3 @@
-# SD
-
 # Distributed Systems - Project (21/22)  
 
 
