@@ -1,6 +1,6 @@
 # Distributed Systems - Project (21/22)
 
-DistributedTravel: Flight booking platform in the form of client-server pair in Java using sockets and threads.
+FlightBooking: a platform in the form of client-server pair in Java using sockets and threads.
 
 
 ## Final grade: 
