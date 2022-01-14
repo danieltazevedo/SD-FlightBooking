@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Reserva implements Serializable {
+    private String efetuadoPor;
     private String codigoReserva;
     private LocalDate dataReserva;
     private LocalDate dataVoo;
@@ -11,7 +12,8 @@ public class Reserva implements Serializable {
 
 
     // Construtor
-    public Reserva(String codigoReserva, LocalDate dataVoo, LocalDate dataReserva,List<Voo> escalas) {
+    public Reserva(String username, String codigoReserva, LocalDate dataVoo, LocalDate dataReserva,List<Voo> escalas) {
+        this.efetuadoPor = username;
         this.codigoReserva = codigoReserva;
         this.dataVoo = dataVoo;
         this.dataReserva = dataReserva;
@@ -31,9 +33,18 @@ public class Reserva implements Serializable {
 
 
     // Métodos
-
     public void addVooToReserva (Voo v) {
         this.escalas.add(v);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Nome cliente: ").append(this.efetuadoPor).append("\nCódigo: ").append(codigoReserva).append("\nEfetuada em: ").append(dataReserva).append("\nData de Voo: ").append(dataVoo).append("\nPercurso: ");
+        for(Voo v : this.escalas){
+            sb.append(v.toString());
+        }
+        sb.append("\n");
+        return sb.toString();
+    }
 }

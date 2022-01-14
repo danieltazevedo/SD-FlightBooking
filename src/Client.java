@@ -3,7 +3,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class Client {
 
@@ -61,8 +60,9 @@ public class Client {
                         + "2) Cancelar reserva de uma viagem.\n"
                         + "3) Obter lista de voos existentes.\n"
                         + "4) Lista de todos os percursos possíveis limitados a duas escalas\n"
-                        + (username.startsWith("admin") ? "5) Inserir informação sobre voos.\n" : "")
-                        + (username.startsWith("admin") ? "6) Encerramento de um dia.\n" : "")
+                        + (username.equals("admin") ? "5) Inserir informação sobre voos.\n" : "")
+                        + (username.equals("admin") ? "6) Encerramento de um dia.\n" : "")
+                        + (username.equals("admin") ? "7) Obter lista de reservas.\n" : "")
                         + "0) Sair.\n\n"
                         + "Insira o valor corresponde à operação desejada: ");
 
@@ -133,7 +133,7 @@ public class Client {
 
                         break;
                     case "5":
-                        if (username.startsWith("admin")) {
+                        if (username.equals("admin")) {
                             System.out.println("***INSERIR INFORMACAO SOBRE VOOS***\n\n");
                             System.out.print("Origem: ");
                             String ori = stdIn.readLine().toLowerCase();
@@ -151,12 +151,20 @@ public class Client {
                             break;
                         }
                     case "6":
-                        if (username.startsWith("admin")) {
+                        if (username.equals("admin")) {
                             System.out.println("***ENCERRAMENTO DE DIA***\n\n");
                             System.out.print("Insira o dia(DD/MM/AAAA): ");
                             String dia = stdIn.readLine();
                             m.send(7,username,dia.getBytes());
                             String response = new String(m.receive(7), StandardCharsets.UTF_8);
+                            System.out.println(response);
+                            break;
+                        }
+                    case "7":
+                        if (username.equals("admin")) {
+                            System.out.println("***LISTA DE RESERVAS***\n\n");
+                            m.send(11,username,new byte[0]);
+                            String response = new String(m.receive(11), StandardCharsets.UTF_8);
                             System.out.println(response);
                             break;
                         }

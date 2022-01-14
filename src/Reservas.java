@@ -45,6 +45,14 @@ public class Reservas implements Serializable {
         }
     }
 
+    public String getListaReservas(){
+        StringBuilder sb = new StringBuilder();
+        for(Reserva r : this.mapReservas.values()){
+            sb.append(r.toString());
+        }
+        return sb.toString();
+    }
+
 
     public boolean reservaExists(String id) {
         return mapReservas.containsKey(id);
@@ -64,7 +72,6 @@ public class Reservas implements Serializable {
                 }
             }
         }
-        System.out.println("OCUPACAO: " + ocupacao);
         return ocupacao;
     }
 

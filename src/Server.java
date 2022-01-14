@@ -158,7 +158,7 @@ public class Server {
                                         while(reservas.reservaExists(uniqueID)){
                                             uniqueID = UUID.randomUUID().toString();
                                         }
-                                        Reserva r = new Reserva(uniqueID,inicio.minusDays(1),LocalDate.now(),listaVoos);
+                                        Reserva r = new Reserva(frame.username, uniqueID,inicio.minusDays(1),LocalDate.now(),listaVoos);
                                         reservas.l.writeLock().lock();
                                         try{
                                             reservas.addReserva(uniqueID,r);
@@ -276,6 +276,17 @@ public class Server {
                                 }
                                 c.send(33,"",sPercursos.toString().getBytes());
 
+                            } else if(frame.tag == 11){
+                                System.out.println("Pedido de Lista de Reservas (ADMIN)");
+
+                                reservas.l.readLock().lock();
+                                String listaReservas;
+                                try{
+                                    listaReservas = reservas.getListaReservas();
+                                } finally {
+                                    reservas.l.readLock().unlock();
+                                }
+                                c.send(11,"",listaReservas.getBytes());
                             }
                             else if(frame.tag == 99){
                                 liuLock.lock();
