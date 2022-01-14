@@ -25,7 +25,7 @@ public class Reserva implements Serializable {
     }
 
     // Getters
-
+    public String getNome() {return this.efetuadoPor;}
     public String getCodigoReserva() { return this.codigoReserva;}
     public LocalDate getDataReserva() {return this.dataReserva;}
     public LocalDate getDataVoo() {return this.dataVoo;}

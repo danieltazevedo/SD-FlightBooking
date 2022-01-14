@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,9 +76,10 @@ public class Client {
                         + "2) Cancelar reserva de uma viagem.\n"
                         + "3) Obter lista de voos existentes.\n"
                         + "4) Lista de todos os percursos possíveis limitados a duas escalas\n"
-                        + (username.equals("admin") ? "5) Inserir informação sobre voos.\n" : "")
-                        + (username.equals("admin") ? "6) Encerramento de um dia.\n" : "")
-                        + (username.equals("admin") ? "7) Obter lista de reservas.\n" : "")
+                        + "5) Obter minhas reservas\n"
+                        + (username.equals("admin") ? "6) Inserir informação sobre voos.\n" : "")
+                        + (username.equals("admin") ? "7) Encerramento de um dia.\n" : "")
+                        + (username.equals("admin") ? "8) Obter lista de reservas.\n" : "")
                         + "0) Sair.\n\n"
                         + "Insira o valor corresponde à operação desejada: ");
 
@@ -104,11 +107,20 @@ public class Client {
                         }
 
                         // ler as datas
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
                         System.out.println(ANSI_YELLOW +"Insira as datas (DD/MM/AAAA): "+ ANSI_RESET);
                         System.out.print(ANSI_YELLOW +"Data inicio: "+ ANSI_RESET);
                         String dataInicio = stdIn.readLine();
+                        while(LocalDate.now().isAfter(LocalDate.parse(dataInicio, formatter))){
+                            System.out.print(ANSI_RED +"Indique uma data válida\n"+ ANSI_RESET);
+                            dataInicio = stdIn.readLine();
+                        }
                         System.out.print(ANSI_YELLOW +"Data final: "+ ANSI_RESET);
                         String dataFinal = stdIn.readLine();
+                        while(LocalDate.parse(dataInicio, formatter).isAfter(LocalDate.parse(dataFinal, formatter))){
+                            System.out.print(ANSI_RED +"Indique uma data válida\n"+ ANSI_RESET);
+                            dataFinal = stdIn.readLine();
+                        }
 
                         // enviar percurso e datas:    lisboa;porto;terceira;20/12/2021;25/12/2021
                         sb.append(";").append(dataInicio).append(";").append(dataFinal);
@@ -127,8 +139,11 @@ public class Client {
 
                         m.send(44,username,codigoReserva.getBytes());
                         String respostaCancelamento = new String(m.receive(44), StandardCharsets.UTF_8);
-                        System.out.println(respostaCancelamento);
-
+                        if(respostaCancelamento.startsWith("Erro")) {
+                            System.out.println(ANSI_RED + respostaCancelamento + ANSI_RESET);
+                        } else {
+                            System.out.println(ANSI_GREEN + respostaCancelamento + ANSI_RESET);
+                            }
                         break;
                     case "3":
                         System.out.println(ANSI_PURPLE +"***LISTA DE VOOS***\n" + ANSI_RESET);
@@ -147,10 +162,15 @@ public class Client {
                         m.send(33,username,sbp.toString().getBytes());
                         String percursos = new String(m.receive(33), StandardCharsets.UTF_8);
                         System.out.println("\n" + percursos);
-
-
                         break;
                     case "5":
+                        System.out.println(ANSI_PURPLE +"***Obter minhas reservas***\n\n"+ ANSI_RESET);
+                        m.send(15,username,new byte[0]);
+                        String respons = new String(m.receive(15), StandardCharsets.UTF_8);
+                        System.out.println(respons);
+                        break;
+
+                    case "6":
                         if (username.equals("admin")) {
                             System.out.println(ANSI_PURPLE +"***INSERIR INFORMACAO SOBRE VOOS***\n\n"+ ANSI_RESET);
                             System.out.print(ANSI_YELLOW +"Origem: "+ ANSI_RESET);
@@ -168,7 +188,7 @@ public class Client {
                             System.out.println(response);
                             break;
                         }
-                    case "6":
+                    case "7":
                         if (username.equals("admin")) {
                             System.out.println(ANSI_PURPLE +"***ENCERRAMENTO DE DIA***\n\n"+ ANSI_RESET);
                             System.out.print(ANSI_YELLOW +"Insira o dia(DD/MM/AAAA): "+ ANSI_RESET);
@@ -178,7 +198,7 @@ public class Client {
                             System.out.println(response);
                             break;
                         }
-                    case "7":
+                    case "8":
                         if (username.equals("admin")) {
                             System.out.println(ANSI_PURPLE +"***LISTA DE RESERVAS***\n\n"+ ANSI_RESET);
                             m.send(11,username,new byte[0]);

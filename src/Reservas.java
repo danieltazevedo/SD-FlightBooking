@@ -23,13 +23,13 @@ public class Reservas implements Serializable {
     public void addReserva(String id,Reserva r) {mapReservas.put(id,r);}
 
 
-    public boolean removeReserva(String id,LocalDate dateOfCanceling) {
+    public boolean removeReserva(String nome,String id,LocalDate dateOfCanceling) {
         Boolean b = false;
 
         Reserva r = mapReservas.get(id);
         if(r == null) return false;
 
-        if(r.getDataReserva().isEqual(dateOfCanceling)){
+        if(r.getDataReserva().isEqual(dateOfCanceling) && r.getNome().equals(nome)){
             b = true;
             mapReservas.remove(id);
         }
@@ -48,6 +48,15 @@ public class Reservas implements Serializable {
     public String getListaReservas(){
         StringBuilder sb = new StringBuilder();
         for(Reserva r : this.mapReservas.values()){
+            sb.append(r.toString());
+        }
+        return sb.toString();
+    }
+
+    public String getListaByName(String name){
+        StringBuilder sb = new StringBuilder();
+        for(Reserva r : this.mapReservas.values()){
+            if(name.equals(r.getNome()))
             sb.append(r.toString());
         }
         return sb.toString();

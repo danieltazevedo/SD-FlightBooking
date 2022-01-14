@@ -186,13 +186,13 @@ public class Server {
                                 boolean b = true;
                                 reservas.l.writeLock().lock();
                                 try {
-                                    b = reservas.removeReserva(codReserva,LocalDate.now());
+                                    b = reservas.removeReserva(frame.username,codReserva,LocalDate.now());
                                 } finally {
                                     reservas.l.writeLock().unlock();
                                 }
 
                                 if(b){
-                                    System.out.println("DEPOIS: " + reservas.getMapReservas().size());
+            
                                     String sucessoCancelamento = new String("Reserva cancelada com sucesso.\n" );
                                     c.send(44,"",sucessoCancelamento.getBytes());
                                 } else {
@@ -237,7 +237,18 @@ public class Server {
                                     sb.append(v.toString());
                                 }
                                 c.send(80,"",sb.toString().getBytes());
-                            } else if(frame.tag == 7){
+                            } else if(frame.tag == 15){
+                                System.out.println(ANSI_YELLOW + "Pedido da Lista de Reservas" + ANSI_RESET);
+                                reservas.l.readLock().lock();
+                                String listaReservas;
+                                try{
+                                    listaReservas = reservas.getListaByName(frame.username);
+                                } finally {
+                                    reservas.l.readLock().unlock();
+                                }
+                                c.send(15,"",listaReservas.getBytes());
+                            }
+                            else if(frame.tag == 7){
                                 System.out.println(ANSI_YELLOW + "Encerramento de dia. (ADMIN)" + ANSI_RESET);
 
                                 // receber data e defini-la como encerrada
@@ -265,7 +276,7 @@ public class Server {
                                 String mensagem = new String("Dia encerrado com sucesso.\n");
                                 c.send(7,"",mensagem.getBytes());
                             } else if(frame.tag == 33){
-                                System.out.println("Pedido de todos os percursos limitados a 2 escalas");
+                                System.out.println(ANSI_YELLOW +"Pedido de todos os percursos limitados a 2 escalas"+ANSI_RESET);
 
                                 String origemDestino = new String(frame.data, StandardCharsets.UTF_8);
                                 String[] origemDest = origemDestino.split(";");
