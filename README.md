@@ -10,7 +10,7 @@ DistributedTravel: Flight booking platform in the form of client-server pair in 
 [Daniel Azevedo](https://www.github.com/danieltazevedo)  
 [Rodrigo Rodrigues](https://www.github.com/webst2r)  
 [Guilherme Monteiro](https://www.github.com/rushmetra)  
-[Vasco Moreno](https://www.github.com/)
+[Vasco Moreno](https://github.com/vascobmoreno)
 
 
 ## Compile & Run
