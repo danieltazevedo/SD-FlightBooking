@@ -10,6 +10,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
 
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
     public static void main(String[] args) {
 
         try {
@@ -65,7 +72,7 @@ public class Server {
                             Frame frame = c.receive();
 
                             if (frame.tag == 0) {
-                                System.out.println("Tentativa de autenticação.");
+                                System.out.println(ANSI_YELLOW + "Tentativa de autenticação." + ANSI_RESET);
                                 String nome = frame.username;
                                 String password = new String(frame.data);
                                 String stored_password;
@@ -90,7 +97,7 @@ public class Server {
                             }
 
                             else if (frame.tag == 1) {
-                                System.out.println("Tentativa de registo.");
+                                System.out.println(ANSI_YELLOW + "Tentativa de registo."+ ANSI_RESET);
                                 String nome = frame.username;
                                 String password = new String(frame.data);
                                 conta.l.writeLock().lock();
@@ -113,7 +120,7 @@ public class Server {
                                     conta.l.writeLock().unlock();
                                 }
                             } else if(frame.tag == 20){
-                                System.out.println("Tentativa de Reserva de viagem");
+                                System.out.println(ANSI_YELLOW +"Tentativa de Reserva de viagem"+ ANSI_RESET);
                                 String info = new String(frame.data, StandardCharsets.UTF_8);
 
                                 //recebe percurso e datas:    3;lisboa;porto;terceira;20/12/2021;25/12/2021
@@ -174,7 +181,7 @@ public class Server {
                                     }
 
                             }else if(frame.tag == 44){
-                                System.out.println("Pedido de cancelamento de Reserva.");
+                                System.out.println(ANSI_YELLOW + "Pedido de cancelamento de Reserva." + ANSI_RESET);
                                 String codReserva = new String(frame.data, StandardCharsets.UTF_8);
                                 boolean b = true;
                                 reservas.l.writeLock().lock();
@@ -186,7 +193,7 @@ public class Server {
 
                                 if(b){
                                     System.out.println("DEPOIS: " + reservas.getMapReservas().size());
-                                    String sucessoCancelamento = new String("Reserva cancelada com sucesso.\n");
+                                    String sucessoCancelamento = new String("Reserva cancelada com sucesso.\n" );
                                     c.send(44,"",sucessoCancelamento.getBytes());
                                 } else {
                                     String erroCancelamento = new String("Erro ao cancelar reserva(reserva inexistente ou período de cancelamento expirado).\n");
@@ -194,7 +201,7 @@ public class Server {
                                 }
                             }
                             else if(frame.tag == 55) {
-                                System.out.println("Tentativa de Inserir Voo (ADMIN).");
+                                System.out.println(ANSI_YELLOW + "Tentativa de Inserir Voo (ADMIN)."+ ANSI_RESET);
                                 String informacao = new String(frame.data, StandardCharsets.UTF_8);
                                 String[] tokens = informacao.split(";");
                                 int idVoo;
@@ -222,7 +229,7 @@ public class Server {
                                 } else c.send(55, "", "Erro - Este voo já existe!".getBytes());
 
                             } else if(frame.tag == 80){
-                                System.out.println("Pedido de lista de voos.");
+                                System.out.println(ANSI_YELLOW + "Pedido de lista de voos." + ANSI_RESET);
                                 Map<Integer,Voo> mv = new HashMap<>();
                                 mv = voos.getVoos();
                                 StringBuilder sb = new StringBuilder();
@@ -231,7 +238,7 @@ public class Server {
                                 }
                                 c.send(80,"",sb.toString().getBytes());
                             } else if(frame.tag == 7){
-                                System.out.println("Encerramento de dia. (ADMIN)");
+                                System.out.println(ANSI_YELLOW + "Encerramento de dia. (ADMIN)" + ANSI_RESET);
 
                                 // receber data e defini-la como encerrada
                                 String dataEncerramento = new String(frame.data, StandardCharsets.UTF_8);
@@ -277,7 +284,7 @@ public class Server {
                                 c.send(33,"",sPercursos.toString().getBytes());
 
                             } else if(frame.tag == 11){
-                                System.out.println("Pedido de Lista de Reservas (ADMIN)");
+                                System.out.println(ANSI_YELLOW + "Pedido de Lista de Reservas (ADMIN)" + ANSI_RESET);
 
                                 reservas.l.readLock().lock();
                                 String listaReservas;
