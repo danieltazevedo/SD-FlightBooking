@@ -3,8 +3,6 @@
 FlightBooking: a platform in the form of client-server pair in Java using sockets and threads.
 
 
-## Final grade: 
-
 ## Group members  
 
 [Daniel Azevedo](https://www.github.com/danieltazevedo)  
